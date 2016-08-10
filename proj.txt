@@ -1,0 +1,11 @@
+
+To Read: 
+Clopath et al. 2010 Nat Neuro
+Ko et al. Nature 2011, 2013
+
+To Do: 
+- Implement a 100 neurons recurrently connected, rate-based point neuron models. 
+- Connections are plastic under standard BCM learning rule. 
+- Form 5 subgroups of 20 neurons, each of the subgroup gets correlated inputs.
+- Study under which conditions neurons within the subgroups form strong bidirectional connections. 
+- Fix the connections. Study the functional implications of this clustered connectivity pattern compared to a random connectivity pattern. What is it good for? Maybe the first thing to test is improvement in signal/to/noise, robustness etc. 
