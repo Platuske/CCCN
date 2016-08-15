@@ -18,7 +18,7 @@ get_ipython().magic('matplotlib inline')
 # $$ \frac{d\mathbf{w}}{dt} = \eta \mathbf{x} \mathbf{y}(\mathbf{y}(t)-\mathbf{\theta}) $$
 # $$ \frac{d\mathbf{\theta}}{dt} = \frac{\mathbf{y}^2}{y_0} $$
 
-# In[ ]:
+# In[1]:
 
 class NeuralNet(object):
     
@@ -117,6 +117,13 @@ class NeuralNet(object):
         ax.imshow(self.ff_nn, aspect='auto',  interpolation='nearest')
     
     def run_network(self):
+        
+        #  rec.nn                           --> recurrent network 
+        #  STEPS_DIM/TIME_CONST             --> size of simulation interval / rate time constant
+        #  self.rec_nn                     --> leaky term 
+        #  w_rec dot rec_nn                --> matrix multiplication of recurrent weight matrix and recurrent 
+        #  w_ff dot ff_nn                  --> feed-forward weight matrix * feed-forward input firing rates
+        
         for i in range(1,self.STEPS_N):
             np.fill_diagonal(self.w_rec[:,:,i-1], 0) # set diagonal to 0 to prevent self-excitation
             
@@ -124,9 +131,15 @@ class NeuralNet(object):
                     -self.rec_nn[:,i-1] + self.w_rec[:,:,i-1].dot(self.rec_nn[:,i-1]) + 
                     self.w_ff[:,:].dot(self.ff_nn[:,i-1]))
             
+            # BCM threshold theta
+            # TAU --> BCM time constant
+            
             self.theta[:,i] = self.theta[:,i-1] + (self.STEPS_DIM/self.TAU) * (
                 -self.theta[:,i-1] + (self.rec_nn[:,i]**2)/self.TARGET_RATE)
-                        
+            
+            # recurrent network placticiy
+            # ETA --> factor of the BCM rule
+            
             if self.REC_PL:
                 self.w_rec[:,:,i-1] = self.w_rec[:,:,i-1].clip(0)
                 
@@ -155,7 +168,7 @@ class NeuralNet(object):
             
 
 
-# In[ ]:
+# In[2]:
 
 #%%timeit
 plastic_recurr = NeuralNet()
