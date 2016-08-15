@@ -18,7 +18,7 @@ get_ipython().magic('matplotlib inline')
 # $$ \frac{d\mathbf{w}}{dt} = \eta \mathbf{x} \mathbf{y}(\mathbf{y}(t)-\mathbf{\theta}) $$
 # $$ \frac{d\mathbf{\theta}}{dt} = \frac{\mathbf{y}^2}{y_0} $$
 
-# In[1]:
+# In[ ]:
 
 class NeuralNet(object):
     
@@ -168,7 +168,7 @@ class NeuralNet(object):
             
 
 
-# In[2]:
+# In[ ]:
 
 #%%timeit
 plastic_recurr = NeuralNet()
@@ -188,25 +188,10 @@ plastic_recurr.plot_nn()
 
 # In[ ]:
 
-print(plastic_recurr.w_rec[:,:,plastic_recurr.STEPS_N-1])
+#print(plastic_recurr.w_rec[:,:,plastic_recurr.STEPS_N-1])
 
 
 # In[ ]:
 
 plastic_recurr.display_stim()
-
-
-# In[ ]:
-
-
-
-
-# In[ ]:
-
-
-
-
-# In[ ]:
-
-
 
