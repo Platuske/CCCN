@@ -5,7 +5,7 @@
 
 # ## Single postsynaptic neuron
 
-# In[ ]:
+# In[3]:
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -18,15 +18,16 @@ get_ipython().magic('matplotlib inline')
 # $$ \frac{d\mathbf{w}}{dt} = \eta \mathbf{x} \mathbf{y}(\mathbf{y}(t)-\mathbf{\theta}) $$
 # $$ \frac{d\mathbf{\theta}}{dt} = \frac{\mathbf{y}^2}{y_0} $$
 
-# In[ ]:
+# In[10]:
 
 class NeuralNet(object):
     
-    def __init__(self, FF_NUM=10, REC_NUM=10, TOT_TIME=20, STEPS_DIM=0.0001, STARTING_RATE = 20,
+    def __init__(self, FF_NUM=10, REC_EXC_NUM=5, REC_INH_NUM=10, TOT_TIME=20, STEPS_DIM=0.0001, STARTING_RATE = 20,
                    TARGET_RATE=10, THETA_START=0.07, ETA=float('1e-2'), TAU=0.03, TIME_CONST = 1,
                    FF_PL=False, REC_PL=False):
         self.FF_NUM = FF_NUM
-        self.REC_NUM = REC_NUM
+        self.REC_EXC_NUM = REC_EXC_NUM
+        self.REC_INH_NUM = REC_INH_NUM
         self.TOT_TIME = TOT_TIME
         self.STEPS_DIM = STEPS_DIM
         self.STARTING_RATE = STARTING_RATE #starting rate for recurrent network
@@ -60,7 +61,11 @@ class NeuralNet(object):
         self.w_ff = np.random.uniform(0.5, 2, [self.REC_NUM, self.FF_NUM]) #random uniform rates [0.5, 2] Hz (Clopath)
         
         # create a random weight matrix for the recurrent network
-        self.w_rec = np.zeros((self.REC_NUM, self.REC_NUM, self.STEPS_N))
+        self.w_rec = np.zeros((self.REC_EXC_NUM+self.REC_INH_NUM, self.REC_EXC_NUM+self.REC_INH_NUM, self.STEPS_N))
+        
+        self.w_rec[0:self.REC_EXC_NUM,0:self.REC_EXC_NUM,0] = np.random.gamma(0.25, 2, [10,10])
+        self.w_rec[self.REC_EXC_NUM+1:-1,self.REC_EXC_NUM+1:-1,0] = -self.w_rec[0:self.REC_EXC_NUM,0:self.REC_EXC_NUM,0]
+        
         self.w_rec[:,:,0] = 0.25 #recurrent weights of 0.25 Hz (Clopath)
         
         self.theta = np.zeros((self.REC_NUM, self.STEPS_N))
@@ -191,7 +196,41 @@ plastic_recurr.plot_nn()
 #print(plastic_recurr.w_rec[:,:,plastic_recurr.STEPS_N-1])
 
 
-# In[ ]:
+# In[55]:
 
 plastic_recurr.display_stim()
+
+
+# In[56]:
+
+REC_EXC_NUM = 4
+REC_INH_NUM = 4
+STEPS_N = 10
+
+w_rec = np.zeros((REC_EXC_NUM+REC_INH_NUM, REC_EXC_NUM+REC_INH_NUM, STEPS_N))
+ALPHA = 2
+SIGMA_EXC = 0.8/(REC_EXC_NUM**(1/2.0))/2
+SIGMA_EXC = 0.8/(REC_INH_NUM**(1/2.0))/2
+BETA = (SIGMA_EXC/2)**(1/2)
+#gamma = np.random.gamma(ALPHA, BETA, 10000)
+
+w_rec[:,0:REC_EXC_NUM,0] = np.random.gamma(ALPHA, BETA, [REC_EXC_NUM+REC_INH_NUM,REC_EXC_NUM])
+w_rec[:,REC_EXC_NUM:,0] = -np.random.gamma(ALPHA, BETA, [REC_EXC_NUM+REC_INH_NUM,REC_EXC_NUM])
+print(np.var(w_rec[:,:,0]))
+eig = np.linalg.eigvals(w_rec[:,:,0])
+
+
+# In[53]:
+
+eig
+
+
+# In[54]:
+
+plt.scatter(eig.real, eig.imag)
+
+
+# In[ ]:
+
+w_rec
 
