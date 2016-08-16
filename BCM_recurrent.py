@@ -5,7 +5,7 @@
 
 # ## Single postsynaptic neuron
 
-# In[3]:
+# In[15]:
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -18,7 +18,7 @@ get_ipython().magic('matplotlib inline')
 # $$ \frac{d\mathbf{w}}{dt} = \eta \mathbf{x} \mathbf{y}(\mathbf{y}(t)-\mathbf{\theta}) $$
 # $$ \frac{d\mathbf{\theta}}{dt} = \frac{\mathbf{y}^2}{y_0} $$
 
-# In[10]:
+# In[16]:
 
 class NeuralNet(object):
     
@@ -62,10 +62,6 @@ class NeuralNet(object):
         
         # create a random weight matrix for the recurrent network
         self.w_rec = np.zeros((self.REC_EXC_NUM+self.REC_INH_NUM, self.REC_EXC_NUM+self.REC_INH_NUM, self.STEPS_N))
-        
-        self.w_rec[0:self.REC_EXC_NUM,0:self.REC_EXC_NUM,0] = np.random.gamma(0.25, 2, [10,10])
-        self.w_rec[self.REC_EXC_NUM+1:-1,self.REC_EXC_NUM+1:-1,0] = -self.w_rec[0:self.REC_EXC_NUM,0:self.REC_EXC_NUM,0]
-        
         self.w_rec[:,:,0] = 0.25 #recurrent weights of 0.25 Hz (Clopath)
         
         self.theta = np.zeros((self.REC_NUM, self.STEPS_N))
@@ -173,64 +169,94 @@ class NeuralNet(object):
             
 
 
-# In[ ]:
+# In[3]:
 
 #%%timeit
 plastic_recurr = NeuralNet()
 plastic_recurr.set_stimulation(STIM_LENGTH=1)
 
 
-# In[ ]:
+# In[4]:
 
 #%%timeit
 plastic_recurr.run_network()
 
 
-# In[ ]:
+# In[5]:
 
 plastic_recurr.plot_nn()
 
 
-# In[ ]:
+# In[6]:
 
 #print(plastic_recurr.w_rec[:,:,plastic_recurr.STEPS_N-1])
 
 
-# In[55]:
+# In[7]:
 
 plastic_recurr.display_stim()
 
 
-# In[56]:
+# In[186]:
 
-REC_EXC_NUM = 4
-REC_INH_NUM = 4
+REC_EXC_NUM = 500
+REC_INH_NUM = 500
+N = REC_EXC_NUM + REC_INH_NUM
 STEPS_N = 10
 
-w_rec = np.zeros((REC_EXC_NUM+REC_INH_NUM, REC_EXC_NUM+REC_INH_NUM, STEPS_N))
-ALPHA = 2
-SIGMA_EXC = 0.8/(REC_EXC_NUM**(1/2.0))/2
-SIGMA_EXC = 0.8/(REC_INH_NUM**(1/2.0))/2
-BETA = (SIGMA_EXC/2)**(1/2)
-#gamma = np.random.gamma(ALPHA, BETA, 10000)
+y = np.zeros(N, )
 
-w_rec[:,0:REC_EXC_NUM,0] = np.random.gamma(ALPHA, BETA, [REC_EXC_NUM+REC_INH_NUM,REC_EXC_NUM])
-w_rec[:,REC_EXC_NUM:,0] = -np.random.gamma(ALPHA, BETA, [REC_EXC_NUM+REC_INH_NUM,REC_EXC_NUM])
-print(np.var(w_rec[:,:,0]))
-eig = np.linalg.eigvals(w_rec[:,:,0])
+K = 2
+THETA = 0.8/((2*N)**(1/2.0))
+w_rec[:,:] = np.random.gamma(K, THETA, [REC_EXC_NUM+REC_INH_NUM,REC_EXC_NUM+REC_INH_NUM])
+np.fill_diagonal(w_rec,0)
+scal = sum(w_rec[:,:REC_EXC_NUM].T,1)/sum(w_rec[:,REC_EXC_NUM:].T,1)
+w_rec[:,REC_EXC_NUM:] = w_rec[:,REC_EXC_NUM:] * scal.reshape((-1,1))
+w_rec[:,REC_EXC_NUM:] = -w_rec[:,REC_EXC_NUM:] 
 
 
-# In[53]:
-
-eig
+eig = np.linalg.eigvals(w_rec[:,:])
 
 
-# In[54]:
+# In[187]:
 
-plt.scatter(eig.real, eig.imag)
+np.min(scal)
+
+
+# In[188]:
+
+np.mean(sum(w_rec[:,REC_EXC_NUM:].T,1)/sum(w_rec[:,:REC_EXC_NUM].T,1))
+
+
+# In[189]:
+
+plt.scatter(eig.real,eig.imag)
+
+
+# In[157]:
+
+np.tile(np.absolute(sum(w_rec[:,:REC_EXC_NUM].T,1)/sum(w_rec[:,REC_EXC_NUM:].T,1)), (500,1)).shape
+
+
+# In[159]:
+
+w_rec[:,:REC_EXC_NUM].shape
+
+
+# In[160]:
+
+x=np.linspace(1,10,10)
+x[3:]
+
+
+# In[153]:
+
+plt.imshow(w_rec)
+plt.colorbar()
+plt.show()
 
 
 # In[ ]:
 
-w_rec
+
 
