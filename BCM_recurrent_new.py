@@ -70,10 +70,10 @@ class NeuralNet(object):
         R = 0.8 #Limit radius for eigenvalues in complex space
         K = 2 #shape of the Gamma distribution
         THETA = R/((2*self.REC_NUM)**(1/2.0))
-
+        
         w_rec = np.random.gamma(K, THETA, [self.REC_NUM,self.REC_NUM])
         np.fill_diagonal(w_rec,0)
-        scal = sum(w_rec[:,:self.REC_EXC_NUM].T,1)/sum(w_rec[:,self.REC_EXC_NUM:].T,1)
+        scal = np.absolute(sum(w_rec[:,:self.REC_EXC_NUM].T)/sum(w_rec[:,self.REC_EXC_NUM:].T))
         w_rec[:,self.REC_EXC_NUM:] = w_rec[:,self.REC_EXC_NUM:] * scal.reshape((-1,1))
         w_rec[:,self.REC_EXC_NUM:] = -w_rec[:,self.REC_EXC_NUM:]
         self.w_rec = np.tile(w_rec,(1,1,self.STEPS_N))
@@ -131,7 +131,12 @@ class NeuralNet(object):
         self.ff_nn = noise
         self.ff_nn[target_neurons,:] = signal
         
+    def check_eigvals(self):
+        eig = np.linalg.eigvals(self.w_rec[:,:])
 
+        plt.scatter(eig.real,eig.imag)
+        plt.axis('equal')
+        plt.show()
         
     def display_stim(self):
         f, ax = plt.subplots(1,1, figsize = (20,5))
